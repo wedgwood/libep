@@ -77,7 +77,7 @@ static inline int ep_del(ep_state_t *state, int fd) {
   return ep_pollapi_del(&state->ps, fd);
 }
 
-static inline int __ep_waittime(ep_timer_t *timer, int hint) {
+static inline int ep__waittime(ep_timer_t *timer, int hint) {
   ep_timer_updatetime(timer);
   int waittime = ep_timer_nearest_diff(timer);
 
@@ -90,6 +90,16 @@ static inline int __ep_waittime(ep_timer_t *timer, int hint) {
   return waittime;
 }
 
+static inline ep_state_t *ep__for_each_start(ep_state_t *state, int waittime) {
+  ep_task_queue_run(&state->nexttick); 
+  ep_task_queue_run_keep(&state->everytick); 
+  ep_timer_execute_now(&state->timer, 128); 
+  ep_pollapi_wait(&state->ps, ep__waittime(&state->timer, (waittime)));
+  return state;
+}
+
+#define ep_for_each(state, waittime, events, data) \
+  while (ep_pollapi_fetch(&ep__for_each_start(state, waittime)->ps, events, data) > 0)
 
 static inline int ep_iterate(ep_state_t *state, int waittime, int *events, ep_data_t *data) {
   int ret = ep_pollapi_fetch(&state->ps, events, data);
@@ -99,7 +109,7 @@ static inline int ep_iterate(ep_state_t *state, int waittime, int *events, ep_da
     ep_task_queue_run_keep(&state->everytick);
     ep_timer_execute_now(&state->timer, 128);
 
-    ret = ep_pollapi_wait(&state->ps, __ep_waittime(&state->timer, waittime));
+    ret = ep_pollapi_wait(&state->ps, ep__waittime(&state->timer, waittime));
 
     if (ret > 0) {
       ep_pollapi_fetch(&state->ps, events, data);

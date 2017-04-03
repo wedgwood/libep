@@ -26,6 +26,9 @@ test-timer: test_timer.c ../*.h
 test-evloop: test_evloop.c ../*.h
 	$(CC) $(CFLAGS) -o $@ test_evloop.c
 
+test-evloop-foreach: test_evloop_foreach.c ../*.h
+	$(CC) $(CFLAGS) -o $@ test_evloop_foreach.c
+
 test-skiplist: test_skiplist.c ../skiplist.h
 	$(CC) $(CFLAGS) -o $@ test_skiplist.c
 
