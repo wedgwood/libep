@@ -47,17 +47,17 @@ typedef struct {
   ep_timer_t *timer;
 } ep_timer_node_t;
 
-#define __ep_timer_node_entry(node) skiplist_entry((node), ep_timer_node_t, n)
+#define ep__timer_node_entry(node) skiplist_entry((node), ep_timer_node_t, n)
 
 static inline void ep_timer_init(ep_timer_t *timer) {
   skiplist_init(timer, &timer->sl);
 }
 
-static inline ep_timer_node_t *__ep_timer_node_create() {
+static inline ep_timer_node_t *ep__timer_node_create() {
   return (ep_timer_node_t *)malloc(sizeof(ep_timer_node_t));
 }
 
-static inline void __ep_timer_node_destroy(void *node) {
+static inline void ep__timer_node_destroy(void *node) {
   free(node);
 }
 
@@ -73,7 +73,7 @@ static inline uint64_t ep_timer_gettime(ep_timer_t *timer) {
 
 static inline ep_timer_id_t ep_timer_run_after(ep_timer_t *timer, uint64_t ms, void (*cb)(void *), void *arg) {
   ep_timer_id_t ret = 0;
-  ep_timer_node_t *node = __ep_timer_node_create();
+  ep_timer_node_t *node = ep__timer_node_create();
 
   if (node) {
     node->ms = 0;
@@ -90,7 +90,7 @@ static inline ep_timer_id_t ep_timer_run_after(ep_timer_t *timer, uint64_t ms, v
 
 static inline ep_timer_id_t ep_timer_run_every(ep_timer_t *timer, uint64_t ms, void (*cb)(void *), void *arg) {
   ep_timer_id_t ret = NULL;
-  ep_timer_node_t *node = __ep_timer_node_create();
+  ep_timer_node_t *node = ep__timer_node_create();
 
   if (node) {
     node->ms = ms;
@@ -109,14 +109,14 @@ static inline void ep_timer_execute(ep_timer_t *timer, uint64_t now, int max_tim
   skiplist_node_t(timer) *node, *n;
 
   skiplist_shift_lte(timer, &timer->sl, now, node, n) {
-    ep_timer_node_t *timer_node = __ep_timer_node_entry(node);
+    ep_timer_node_t *timer_node = ep__timer_node_entry(node);
     timer_node->cb(timer_node->arg);
 
     if (timer_node->ms > 0) {
       timer_node->n.score += timer_node->ms;
       skiplist_insert(timer, &timer->sl, &timer_node->n);
     } else {
-      __ep_timer_node_destroy(timer_node);
+      ep__timer_node_destroy(timer_node);
     }
 
     if (max_times >= 0 && --max_times <= 0) {
@@ -143,13 +143,13 @@ static inline void ep_timer_clear(ep_timer_id_t id) {
   ep_timer_node_t *node = (ep_timer_node_t *)id;
   ep_timer_t *timer = node->timer;
   skiplist_delete(timer, &timer->sl, id);
-  __ep_timer_node_destroy(node);
+  ep__timer_node_destroy(node);
 }
 
 static inline void ep_timer_fini(ep_timer_t *timer) {
   skiplist_node_t(timer) *n1;
   skiplist_node_t(timer) *n2;
-  skiplist_for_each_clear(n1, n2, &timer->sl, __ep_timer_node_destroy);
+  skiplist_for_each_clear(n1, n2, &timer->sl, ep__timer_node_destroy);
 }
 
 static inline ep_timer_id_t ep_timer_settimeout(ep_timer_t *timer, uint64_t ms, void (*cb)(void *), void *arg) {

@@ -70,19 +70,19 @@ static inline int singly_list_empty(singly_list_head_t *head) {
   return !head->begin;
 }
 
-static inline void __singly_list_splice(singly_list_head_t *list, singly_list_head_t *head) {
+static inline void singly__list_splice(singly_list_head_t *list, singly_list_head_t *head) {
   *head->end = list->begin;
 }
 
 static inline void singly_list_splice(singly_list_head_t *list, singly_list_head_t *head) {
   if (!singly_list_empty(list)) {
-    __singly_list_splice(list, head);
+    singly__list_splice(list, head);
   }
 }
 
 static inline void singly_list_splice_init(singly_list_head_t *list, singly_list_head_t *head) {
   if (!singly_list_empty(list)) {
-    __singly_list_splice(list, head);
+    singly__list_splice(list, head);
     INIT_SINGLY_LIST_HEAD(list);
   }
 }

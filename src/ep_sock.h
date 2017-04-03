@@ -356,7 +356,7 @@ static inline int ep_v6only(int s) {
   return ret;
 }
 
-static inline int __ep_tcpserver(int port, const char *bindaddr, int af, int backlog) {
+static inline int ep__tcpserver(int port, const char *bindaddr, int af, int backlog) {
   int s, rv;
   char portstr[6];
   struct addrinfo hints, *servinfo, *p;
@@ -403,11 +403,11 @@ end:
 }
 
 static inline int ep_tcpserver(int port, const char *bindaddr, int backlog) {
-  return __ep_tcpserver(port, bindaddr, AF_INET, backlog);
+  return ep__tcpserver(port, bindaddr, AF_INET, backlog);
 }
 
 static inline int ep_tcp6server(int port, const char *bindaddr, int backlog) {
-  return __ep_tcpserver(port, bindaddr, AF_INET6, backlog);
+  return ep__tcpserver(port, bindaddr, AF_INET6, backlog);
 }
 
 static inline int ep_unixserver(const char *path, mode_t perm, int backlog) {
@@ -502,7 +502,7 @@ static inline int ep_unixaccept(int s) {
   return ep_genericaccept(s, (struct sockaddr *)&sa, &sa_len);
 }
 
-static inline int __ep_udpserver(int port, const char *bindaddr, int af) {
+static inline int ep__udpserver(int port, const char *bindaddr, int af) {
   int s, rv;
   char portstr[6];
   struct addrinfo hints, *servinfo, *p;
@@ -549,11 +549,11 @@ end:
 }
 
 static inline int ep_udpserver(int port, const char *bindaddr) {
-  return __ep_udpserver(port, bindaddr, AF_INET);
+  return ep__udpserver(port, bindaddr, AF_INET);
 }
 
 static inline int ep_udp6server(int port, const char *bindaddr) {
-  return __ep_udpserver(port, bindaddr, AF_INET6);
+  return ep__udpserver(port, bindaddr, AF_INET6);
 }
 
 static inline ssize_t ep_udprecvfrom(int s, void *buf, size_t length, char *ip, size_t ip_len, int *port) {
