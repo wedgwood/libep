@@ -32,7 +32,7 @@ void test1() {
   ep_everytick(&state, onetick, NULL);
 
   while (1) {
-    ep_foreach(&state, -1, &events_out, &data_out) {
+    ep_for_each(&state, -1, &events_out, &data_out) {
       int len;
       int fd_out = data_out.fd;
       puts("\n--------------------\n");
