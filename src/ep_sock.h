@@ -568,7 +568,45 @@ static inline ssize_t ep_udprecvfrom(int s, void *buf, size_t length, char *ip, 
   return len;
 }
 
-// static inline int peertostring(int fd, char *ip, size_t ip_len, int *port)
+static inline int ep_tcppeername(int fd, char *ip, size_t ip_len, int *port) {
+  struct sockaddr_storage sa;
+  socklen_t salen = sizeof(sa);
+
+  if (getpeername(fd, (struct sockaddr*)&sa, &salen) == -1) {
+    if (port) {
+      *port = 0;
+    }
+
+    ip[0] = '?';
+    ip[1] = '\0';
+    return -1;
+  }
+
+  if (sa.ss_family == AF_INET) {
+    struct sockaddr_in *s = (struct sockaddr_in *)&sa;
+
+    if (ip) {
+      inet_ntop(AF_INET, (void*)&(s->sin_addr), ip, ip_len);
+    }
+
+    if (port) {
+      *port = ntohs(s->sin_port);
+    }
+  } else {
+    struct sockaddr_in6 *s = (struct sockaddr_in6 *)&sa;
+
+    if (ip) {
+      inet_ntop(AF_INET6, (void*)&(s->sin6_addr), ip, ip_len);
+    }
+
+    if (port) {
+      *port = ntohs(s->sin6_port);
+    }
+  }
+
+  return 0;
+}
+
 // static inline int sockname(int fd, char *ip, size_t ip_len, int *port);
 
 #endif //!__EP_SOCK_H__
