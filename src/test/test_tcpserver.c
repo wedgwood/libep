@@ -38,7 +38,7 @@ int main()
   while (1) {
     puts("====== iterate");
     fflush(stdout);
-    if (ep_iterate(&state, -1, &events, &data_out) > 0) {
+    ep_for_each(&state, -1, &events, &data_out) {
       if (data_out.fd == server) {
         int client;
 

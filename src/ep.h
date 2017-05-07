@@ -91,15 +91,15 @@ static inline int ep__waittime(ep_timer_t *timer, int hint) {
 }
 
 static inline ep_state_t *ep__for_each_start(ep_state_t *state, int waittime) {
-  ep_task_queue_run(&state->nexttick); 
-  ep_task_queue_run_keep(&state->everytick); 
-  ep_timer_execute_now(&state->timer, 128); 
+  ep_task_queue_run(&state->nexttick);
+  ep_task_queue_run_keep(&state->everytick);
+  ep_timer_execute_now(&state->timer, 128);
   ep_pollapi_wait(&state->ps, ep__waittime(&state->timer, (waittime)));
   return state;
 }
 
 #define ep_for_each(state, waittime, events, data) \
-  while (ep_pollapi_fetch(&ep__for_each_start(state, waittime)->ps, events, data) > 0)
+  for (ep__for_each_start((state), waittime); ep_pollapi_fetch(&(state)->ps, events, data) > 0;)
 
 static inline int ep_iterate(ep_state_t *state, int waittime, int *events, ep_data_t *data) {
   int ret = ep_pollapi_fetch(&state->ps, events, data);
