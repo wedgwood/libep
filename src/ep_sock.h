@@ -197,7 +197,7 @@ static inline int ep_generictcpconnect(const char *host, int port, char *source,
       goto err;
     }
 
-    if (nonblock && ep_nonblock(s) != -1) {
+    if (nonblock && ep_nonblock(s) == -1) {
       goto err;
     }
 
