@@ -255,7 +255,97 @@ static inline int ep_tcpconnect_nb(const char *host, int port) {
 }
 
 static inline int ep_tcpbindconnect(const char *host, int port, char *source) {
+  return ep_generictcpconnect(host, port, source, 0);
+}
+
+static inline int ep_tcpbindconnect_nb(const char *host, int port, char *source) {
   return ep_generictcpconnect(host, port, source, 1);
+}
+
+static inline int ep_genericudpconnect(const char *host, int port, char *source, int nonblock) {
+  int s = -1;
+  char portstr[6];
+  struct addrinfo hints, *servinfo, *bservinfo, *p, *b;
+
+  snprintf(portstr, sizeof(portstr), "%d", port);
+  bzero(&hints, sizeof(hints));
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_DGRAM;
+
+  int rv;
+
+  if ((rv = getaddrinfo(host, portstr, &hints, &servinfo)) != 0) {
+    return -1;
+  }
+
+  for (p = servinfo; p != NULL; p = p->ai_next) {
+    if ((s = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
+      continue;
+    }
+
+    if (ep_reuseaddr_enable(s) == -1) {
+      goto err;
+    }
+
+    if (nonblock && ep_nonblock(s) == -1) {
+      goto err;
+    }
+
+    if (source) {
+      int bound = 0;
+
+      if ((rv = getaddrinfo(source, NULL, &hints, &bservinfo)) != 0) {
+        goto err;
+      }
+
+      for (b = bservinfo; b != NULL; b = b->ai_next) {
+        if (bind(s, b->ai_addr, b->ai_addrlen) != -1) {
+          bound = 1;
+          break;
+        }
+      }
+
+      freeaddrinfo(bservinfo);
+
+      if (!bound) {
+        goto ret;
+      }
+    }
+
+    if (connect(s, p->ai_addr, p->ai_addrlen) == -1) {
+      close(s);
+      s = -1;
+      continue;
+    }
+
+    goto ret;
+  }
+
+err:
+  if (s != -1) {
+    close(s);
+    s = -1;
+  }
+
+ret:
+  freeaddrinfo(servinfo);
+  return s;
+}
+
+static inline int ep_udpconnect(const char *host, int port) {
+  return ep_genericudpconnect(host, port, NULL, 0);
+}
+
+static inline int ep_udpconnect_nb(const char *host, int port) {
+  return ep_genericudpconnect(host, port, NULL, 1);
+}
+
+static inline int ep_udpbindconnect(const char *host, int port, char *source) {
+  return ep_genericudpconnect(host, port, source, 0);
+}
+
+static inline int ep_udpbindconnect_nb(const char *host, int port, char *source) {
+  return ep_genericudpconnect(host, port, source, 1);
 }
 
 static inline int ep_genericunixconnect(const char *path, int nonblock) {
