@@ -550,9 +550,9 @@ static inline int ep_genericaccept(int s, struct sockaddr *sa, socklen_t *len) {
   return ret;
 }
 
-static inline void ep_getinetinfo(struct sockaddr_storage *ss, char *ip, size_t ip_len, int *port) {
-  if (ss->ss_family == AF_INET) {
-    struct sockaddr_in *s = (struct sockaddr_in *)ss;
+static inline void ep_getinetinfo(struct sockaddr *sa, char *ip, size_t ip_len, int *port) {
+  if (sa->sa_family == AF_INET) {
+    struct sockaddr_in *s = (struct sockaddr_in *)sa;
 
     if (ip) {
       inet_ntop(AF_INET, (void *)&(s->sin_addr), ip, ip_len);
@@ -562,7 +562,7 @@ static inline void ep_getinetinfo(struct sockaddr_storage *ss, char *ip, size_t 
       *port = ntohs(s->sin_port);
     }
   } else {
-    struct sockaddr_in6 *s = (struct sockaddr_in6 *)ss;
+    struct sockaddr_in6 *s = (struct sockaddr_in6 *)sa;
 
     if (ip) {
       inet_ntop(AF_INET6, (void *)&(s->sin6_addr), ip, ip_len);
